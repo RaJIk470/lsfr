@@ -21,6 +21,8 @@ public class EncodingForm extends JFrame {
     private JTextField xorBitsField;
     private JTextField stateField;
     private JTextField fileField;
+    private JTextField directoryField;
+    private JTextField newFileNameField;
     private JTextArea keyArea;
     private JTextArea sourceArea;
     private JTextArea resultArea;
@@ -73,6 +75,45 @@ public class EncodingForm extends JFrame {
         });
 
         mainPanel.add(statePanel);
+
+        JPanel newFileNamePanel = new JPanel();
+        JLabel  newFileNameLabel = new JLabel("Output file name: ");
+        newFileNameLabel.setFont(font);
+        newFileNamePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        newFileNamePanel.add(newFileNameLabel);
+        newFileNameField = new JTextField(20);
+        newFileNameField.setFont(font);
+        newFileNamePanel.add(newFileNameField);
+        mainPanel.add(newFileNamePanel);
+
+        JPanel outputDirField = new JPanel();
+        outputDirField.setLayout(new FlowLayout(FlowLayout.LEFT));
+        JLabel outDirLab = new JLabel("Output directory: ");
+        outDirLab.setFont(font);
+        outputDirField.add(outDirLab);
+
+        directoryField = new JTextField(20);
+        directoryField.setFont(font);
+        directoryField.setEditable(false);
+        outputDirField.add(directoryField);
+
+        JButton chooseOutputDirectoryButton = new JButton("Choose output directory");
+        chooseOutputDirectoryButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int result = fileChooser.showDialog(EncodingForm.this, "Open");
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    directoryField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+                }
+            }
+        });
+        chooseOutputDirectoryButton.setFont(font);
+        outputDirField.add(chooseOutputDirectoryButton);
+        chooseOutputDirectoryButton.addActionListener((event) -> {
+        });
+
+        mainPanel.add(outputDirField);
 
 
         JPanel filePanel = new JPanel();
@@ -145,9 +186,16 @@ public class EncodingForm extends JFrame {
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Format error in state and xor bits fields", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
-            File file = new File(fileField.getText());
+            //File file = new File(fileField.getText());
+            File file = new File(directoryField.getText() + File.separator + newFileNameField.getText());
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             try (FileInputStream fileInputStream = new FileInputStream(fileField.getText());
-                 FileOutputStream fileOutputStream = new FileOutputStream(file.getParentFile() + "/" + file.getName() + "_result")) {
+                 //FileOutputStream fileOutputStream = new FileOutputStream(file.getParentFile() + "/" + file.getName() + "_result")) {
+                 FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsoluteFile())) {
                 byte[] bytes = fileInputStream.readAllBytes();
                 byte[] newMsg = new byte[bytes.length];
                 for (int i = 0; i < bytes.length; i++) {
