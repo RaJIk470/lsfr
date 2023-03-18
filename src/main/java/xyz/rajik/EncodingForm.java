@@ -180,9 +180,12 @@ public class EncodingForm extends JFrame {
 
         ActionListener actionListener = (event) -> {
             try {
-                if (stateField.getText().length() != 24 || xorBitsField.getText().length() != 24)
+                //if (stateField.getText().length() != 24 || xorBitsField.getText().length() != 24)
+                    //throw new RuntimeException("Error");
+                if (stateField.getText().length() != xorBitsField.getText().length())
                     throw new RuntimeException("Error");
-                lfsr = new LFSRByteEncoder(Integer.parseInt(stateField.getText(), 2), Integer.parseInt(xorBitsField.getText(), 2), LFSRByteEncoder.DEFAULT_SIZE);
+                //lfsr = new LFSRByteEncoder(Integer.parseInt(stateField.getText(), 2), Integer.parseInt(xorBitsField.getText(), 2), LFSRByteEncoder.DEFAULT_SIZE);
+                lfsr = new LFSRByteEncoder(Integer.parseInt(stateField.getText(), 2), Integer.parseInt(xorBitsField.getText(), 2), stateField.getText().length());
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Format error in state and xor bits fields", "ERROR", JOptionPane.ERROR_MESSAGE);
             }
