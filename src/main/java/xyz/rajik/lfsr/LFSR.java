@@ -12,7 +12,8 @@ public class LFSR implements Iterator<Boolean> {
     private Integer keySize;
 
     public LFSR(int initialState, int xorBits, int size) {
-        if (xorBits >> (size - 1) > 0) throw new LFSRException("incorrect seed value");
+        if (xorBits >> (size) > 0 || xorBits >> (size - 1) == 0) throw new LFSRException("incorrect seed value");
+        //if (initialState >> (size) > 0 || initialState >> (size - 1) == 0) throw new LFSRException("incorrect seed value");
         keySize = 0;
         key = new BitSet();
         state = BitSet.valueOf(new long[]{initialState});
@@ -29,12 +30,8 @@ public class LFSR implements Iterator<Boolean> {
     @Override
     public Boolean next() {
         Boolean result = state.get(size - 1);
-        Boolean xorResult = result;
-
-        System.out.print("key " + keySize + ": ");
-        for (Character ch : bitSetToString(state, 24).toCharArray()) {
-            System.out.print(ch + " ");
-        }
+        //Boolean result = false;
+        Boolean xorResult = false;
 
         for (int i = 0; i < xorIndexes.size(); i++)
             xorResult = xorResult ^ state.get(xorIndexes.get(i));
@@ -43,8 +40,6 @@ public class LFSR implements Iterator<Boolean> {
         for (int i = size - 1; i > 0; i--) {
             state.set(i, state.get(i - 1));
         }
-        System.out.print(xorResult ? "1" : "0");
-        System.out.println();
         state.set(0, xorResult);
         key.set(keySize++, result);
         return result;
@@ -63,11 +58,17 @@ public class LFSR implements Iterator<Boolean> {
         StringBuilder sc = new StringBuilder();
         for (int i = 0; i < size; i++) {
             sc.append(bitSet.get(i) ? '1' : '0');
-            /*b.append(bitSet.get(i) ? '1' : '0');
-            if ((i + 1) % 8 == 0) {
-                sc.append(b.reverse());
-                b = new StringBuilder();
-            }*/
+        }
+
+
+        return sc.toString();
+    }
+
+    public static String bitSetToString(BitSet bitSet, int size, int offset) {
+        StringBuilder sc = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            sc.append(bitSet.get(i) ? '1' : '0');
+            if ((i + 1) % offset == 0) sc.append('\n');
         }
 
 
@@ -76,6 +77,10 @@ public class LFSR implements Iterator<Boolean> {
 
     public static String byteArrayToBits(byte[] array) {
         return bitSetToString(BitSet.valueOf(array), array.length * 8);
+    }
+
+    public static String byteArrayToBits(byte[] array, Integer offset) {
+        return bitSetToString(BitSet.valueOf(array), array.length * 8, offset);
     }
 
     public String keyToString() {

@@ -139,6 +139,8 @@ public class EncodingForm extends JFrame {
 
         ActionListener actionListener = (event) -> {
             try {
+                if (stateField.getText().length() != 24 || xorBitsField.getText().length() != 24)
+                    throw new RuntimeException("Error");
                 lfsr = new LFSRByteEncoder(Integer.parseInt(stateField.getText(), 2), Integer.parseInt(xorBitsField.getText(), 2), LFSRByteEncoder.DEFAULT_SIZE);
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Format error in state and xor bits fields", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -157,17 +159,21 @@ public class EncodingForm extends JFrame {
                     }
                 }
                 bytes = newMsg;
-                System.out.println(Arrays.toString(bytes));
-                for (Byte b : bytes) {
-                    System.out.print(Integer.toBinaryString(b) + " ");
-                }
-                System.out.println();
                 byte[] encodedBytes = lfsr.encode(bytes);
                 BitSet key = lfsr.getLfsr().getKey().get(0, bytes.length * 8);
-                System.out.println(key);
-                keyArea.setText(LFSR.bitSetToString(key, bytes.length * 8));
-                sourceArea.setText(LFSR.byteArrayToBits(bytes));
-                resultArea.setText(LFSR.byteArrayToBits(encodedBytes));
+
+                int offset = 50;
+
+                String keyBits = LFSR.bitSetToString(key, bytes.length * 8, offset);
+                String sourceBits = LFSR.byteArrayToBits(bytes, offset);
+                String resultBits = LFSR.byteArrayToBits(encodedBytes, offset);
+
+
+                keyArea.setText(keyBits);
+                sourceArea.setText(sourceBits);
+                resultArea.setText(resultBits);
+
+
                 newMsg = new byte[encodedBytes.length];
                 for (int i = 0; i < encodedBytes.length; i++) {
                     for (int j = 0; j < 8; j++) {
@@ -199,6 +205,14 @@ public class EncodingForm extends JFrame {
         mainPanel.add(buttonPanel);
 
         add(mainPanel);
+    }
+
+    public void setTextWithLineBreaks(JTextArea textArea, String text, Integer offset) {
+        for (int i = 0; i < text.length() / offset; i++)
+            textArea.append(text.substring(i * offset, offset * (1 + i)) + "\n");
+
+        int lastAppended = text.length() - text.length() % offset;
+        textArea.append(text.substring(lastAppended, text.length()));
     }
 
     public static void main(String[] args) {
